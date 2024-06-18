@@ -26,6 +26,8 @@
 
 [Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
 
+senha db = qBgEviJ4qOZMdiU8
+
 ## Installation
 
 ```bash
