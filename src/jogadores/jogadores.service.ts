@@ -4,8 +4,8 @@ import {
   Logger,
   NotFoundException,
 } from '@nestjs/common';
-import { CreatePlayerDto } from './dtos/create-player.dto';
 import { Player } from './interfaces/player.interface';
+import { UpdatePlayerDto, CreatePlayerDto } from './dtos';
 
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
@@ -33,7 +33,7 @@ export class PlayersService {
 
   async updatePlayer(
     _id: string,
-    createPlayerDto: CreatePlayerDto,
+    updatePlayerDto: UpdatePlayerDto,
   ): Promise<void> {
     const playerShared = await this.playerModel.findOne({ _id }).exec();
 
@@ -42,7 +42,7 @@ export class PlayersService {
     }
 
     await this.playerModel
-      .findOneAndUpdate({ _id }, { $set: createPlayerDto })
+      .findOneAndUpdate({ _id }, { $set: updatePlayerDto })
       .exec();
   }
 

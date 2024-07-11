@@ -2,8 +2,8 @@ import * as mongoose from 'mongoose';
 
 export const PlayerSchema = new mongoose.Schema(
   {
-    telephone: { type: String, unique: true },
     email: { type: String, unique: true },
+    telephone: String,
     name: String,
     ranking: String,
     positionRanking: Number,
