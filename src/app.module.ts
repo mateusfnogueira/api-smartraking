@@ -1,5 +1,5 @@
 import { Module } from '@nestjs/common';
-import { JogadoresModule } from './jogadores/jogadores.module';
+import { PlayersModule } from './jogadores/jogadores.module';
 import { MongooseModule } from '@nestjs/mongoose';
 import { CategoriesModule } from './categories/categories.module';
 
@@ -8,7 +8,7 @@ const DB_PASSWORD = process.env.MONGODB_PASSWORD;
 @Module({
   imports: [
     MongooseModule.forRoot(DB_URL.replace('<password>', DB_PASSWORD)),
-    JogadoresModule,
+    PlayersModule,
     CategoriesModule,
   ],
   controllers: [],

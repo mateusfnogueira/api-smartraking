@@ -23,7 +23,7 @@ export class JogadoresController {
     await this.playersService.createPlayer(createPlayerDto);
   }
 
-  @Put(':_id')
+  @Put(':/_id')
   @UsePipes(ValidationPipe)
   async updatePlayer(
     @Body() updatePlayerDto: UpdatePlayerDto,
