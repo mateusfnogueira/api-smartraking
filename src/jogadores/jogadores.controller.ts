@@ -11,8 +11,8 @@ import {
 } from '@nestjs/common';
 import { PlayersService } from './jogadores.service';
 import { Player } from './interfaces/player.interface';
-import { PlayerValidationParamsPipe } from './pipes/player-validation-params.pipe';
 import { UpdatePlayerDto, CreatePlayerDto } from './dtos';
+import { PlayerValidationParamsPipe } from 'src/common/pipes/player-validation-params.pipe';
 
 @Controller('api/v1/jogadores')
 export class JogadoresController {
