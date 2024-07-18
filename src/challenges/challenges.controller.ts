@@ -43,7 +43,7 @@ export class ChallengesController {
   async getChallengeById(
     @Param('_playerId') playerId: string,
   ): Promise<Array<IChallenge>> {
-    return await this.challengeService.getChallengById(playerId);
+    return await this.challengeService.getChallengByPlayerId(playerId);
   }
 
   @Put('/:challenge')

@@ -1,4 +1,9 @@
-import { BadRequestException, Injectable, Logger } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  InternalServerErrorException,
+  Logger,
+} from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { IChallenge, IMatch } from './interfaces/challenge.interface';
@@ -7,6 +12,7 @@ import { CategoriesService } from 'src/categories/categories.service';
 import { CreateChallengeDto } from './dtos/create-challenge.dto';
 import { ChallengeStatus } from './interfaces/challenge-status.enum';
 import { UpdateChallengeDto } from './dtos/update-challenge.dto';
+import { AssignChallengeMatchDto } from './dtos/assign-challenge-match.dto';
 
 @Injectable()
 export class ChallengesService {
@@ -78,7 +84,7 @@ export class ChallengesService {
       .exec();
   }
 
-  async getChallengById(_id: any): Promise<Array<IChallenge>> {
+  async getChallengByPlayerId(_id: any): Promise<Array<IChallenge>> {
     const player = await this.playersService.getPlayersById(_id);
 
     if (!player) {
@@ -99,22 +105,78 @@ export class ChallengesService {
     _id: string,
     updateChallengeDto: UpdateChallengeDto,
   ): Promise<void> {
-    const challengeShared = await this.challengeModel.findById(_id);
+    const sharedChallenge = await this.challengeModel.findById(_id);
 
-    if (!challengeShared) {
+    if (!sharedChallenge) {
       throw new BadRequestException(`Desafio ${_id} não cadastrado`);
     }
 
     if (updateChallengeDto.status) {
-      challengeShared.responseDate = new Date();
-      challengeShared.status = updateChallengeDto.status;
+      sharedChallenge.responseDate = new Date();
+      sharedChallenge.status = updateChallengeDto.status;
     }
 
-    challengeShared.challengeDate = updateChallengeDto.challengeDate;
+    sharedChallenge.challengeDate = updateChallengeDto.challengeDate;
 
     await this.challengeModel.findByIdAndUpdate(
       { _id },
-      { $set: challengeShared },
+      { $set: sharedChallenge },
     );
+  }
+
+  async assignChallengeMatch(
+    _id: string,
+    assignChallengeMatchDto: AssignChallengeMatchDto,
+  ): Promise<void> {
+    const sharedChallenge = await this.challengeModel.findById(_id).exec();
+
+    if (!sharedChallenge) {
+      throw new BadRequestException(`Desafio ${_id} não cadastrada`);
+    }
+
+    const filteredPlayer = sharedChallenge.players.filter(
+      (player) => player._id == assignChallengeMatchDto.def._id,
+    );
+
+    if (!filteredPlayer.length) {
+      throw new BadRequestException(
+        `O jogador vencedor não faz parte do desafio!`,
+      );
+    }
+
+    this.logger.log(`desafioEncontrado: ${sharedChallenge}`);
+    this.logger.log(`jogadorFilter: ${filteredPlayer}`);
+
+    const createdMatch = new this.matchModel(assignChallengeMatchDto);
+
+    createdMatch.category = sharedChallenge.category;
+    createdMatch.players = sharedChallenge.players;
+
+    const result = await createdMatch.save();
+
+    sharedChallenge.status = ChallengeStatus.HELD;
+    sharedChallenge.match = result;
+
+    try {
+      await this.challengeModel
+        .findOneAndUpdate({ _id }, { $set: sharedChallenge })
+        .exec();
+    } catch (error) {
+      await this.challengeModel.deleteOne({ _id: result._id }).exec();
+      throw new InternalServerErrorException();
+    }
+  }
+
+  async deleteChallenge(_id: string): Promise<void> {
+    const sharedChallenge = await this.challengeModel.findById(_id).exec();
+
+    if (!sharedChallenge) {
+      throw new BadRequestException(`Desafio ${_id} não cadastrado!`);
+    }
+
+    sharedChallenge.status = ChallengeStatus.CANCELED;
+    await this.challengeModel
+      .findOneAndUpdate({ _id }, { $set: sharedChallenge })
+      .exec();
   }
 }
