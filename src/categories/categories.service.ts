@@ -44,6 +44,30 @@ export class CategoriesService {
     return categorieShared;
   }
 
+  async getCategorieByPlayer(playerId: any): Promise<Categorie> {
+    /*
+        Desafio
+        Escopo da exceção realocado para o próprio Categorias Service
+        Verificar se o jogador informado já se encontra cadastrado
+        */
+
+    //await this.jogadoresService.consultarJogadorPeloId(idJogador)
+
+    const players = await this.playersService.getAllPlayers();
+
+    const playerFiltered = players.filter((jogador) => jogador._id == playerId);
+
+    if (playerFiltered.length == 0) {
+      throw new BadRequestException(`O id ${playerId} não é um jogador!`);
+    }
+
+    return await this.categorieModel
+      .findOne()
+      .where('players')
+      .in(playerId)
+      .exec();
+  }
+
   // update events categorie
   async updateCategorie(
     categorie: string,
