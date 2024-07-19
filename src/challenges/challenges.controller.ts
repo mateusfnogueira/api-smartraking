@@ -24,7 +24,7 @@ export class ChallengesController {
   private readonly logger = new Logger(ChallengesController.name);
 
   @Post()
-  @UsePipes()
+  @UsePipes(ValidationPipe)
   async createChallenge(
     @Body() createChallengeDto: CreateChallengeDto,
   ): Promise<IChallenge> {
